@@ -1,0 +1,171 @@
+{
+  "ietf-mud:mud": {
+    "mud-version": 1,
+    "mud-url": "https://huellaip.github.io/huellas/camara/fabricante-ejemplo/x1/2.4.1.json",
+    "last-update": "2026-10-28T12:00:00-03:00",
+    "cache-validity": 48,
+    "is-supported": true,
+    "systeminfo": "Cámara IP Fabricante Ejemplo X1 (huella de ejemplo, valores ficticios)",
+    "mfg-name": "Fabricante Ejemplo",
+    "model-name": "X1",
+    "firmware-rev": "2.4.1",
+    "documentation": "https://github.com/huellaip/huellas",
+    "extensions": ["huellaip-perfil", "ietf-mud-tls"],
+    "ietf-mud-tls:is-tls-dtls-profile-supported": true,
+    "from-device-policy": {
+      "access-lists": { "access-list": [{ "name": "desde-dispositivo" }] }
+    },
+    "to-device-policy": {
+      "access-lists": { "access-list": [{ "name": "hacia-dispositivo" }] }
+    },
+    "huellaip-perfil:perfil": {
+      "version-formato": "0.1.0",
+      "categoria": "camara",
+      "etiqueta": "benigno",
+      "identificacion": { "oui": ["00:00:5E"] },
+      "captura": {
+        "pais": "AR",
+        "fecha-inicio": "2026-10-01",
+        "fecha-fin": "2026-10-05",
+        "aportante": "Laboratorio HuellaIP",
+        "confianza": "media",
+        "fuente-asn": "Volcado de tabla BGP del 2026-10-01 (ejemplo)"
+      },
+      "estados": {
+        "encendido": {
+          "muestra": { "sesiones": 5, "minutos": 75 },
+          "sesiones-concurrentes": { "p50": 2, "p95": 4, "max": 5 },
+          "bytes-subida-hora-p95": 1200000,
+          "bytes-bajada-hora-p95": 9000000,
+          "conexiones-nuevas-min-p95": 8,
+          "destinos": ["cloud.fabricante.example", "ntp.fabricante.example"],
+          "asn-esperados": [64500],
+          "versiones-tls": ["tls12"]
+        },
+        "reposo": {
+          "muestra": { "sesiones": 1, "minutos": 4320 },
+          "sesiones-concurrentes": { "p50": 3, "p95": 6, "max": 9 },
+          "bytes-subida-hora-p95": 2500000,
+          "bytes-bajada-hora-p95": 800000,
+          "conexiones-nuevas-min-p95": 2,
+          "keepalive-segundos": 60,
+          "destinos": [
+            "cloud.fabricante.example",
+            "ntp.fabricante.example",
+            "*.dispositivos.fabricante.example"
+          ],
+          "asn-esperados": [64500],
+          "versiones-tls": ["tls12"]
+        },
+        "activo": {
+          "muestra": { "sesiones": 3, "minutos": 135 },
+          "sesiones-concurrentes": { "p50": 5, "p95": 12, "max": 20 },
+          "bytes-subida-hora-p95": 450000000,
+          "bytes-bajada-hora-p95": 3000000,
+          "conexiones-nuevas-min-p95": 6,
+          "keepalive-segundos": 60,
+          "destinos": ["cloud.fabricante.example", "stream.fabricante.example"],
+          "asn-esperados": [64500, 64501],
+          "versiones-tls": ["tls12"]
+        },
+        "interaccion": {
+          "muestra": { "sesiones": 3, "minutos": 30 },
+          "sesiones-concurrentes": { "p50": 4, "p95": 8, "max": 10 },
+          "bytes-subida-hora-p95": 120000000,
+          "bytes-bajada-hora-p95": 2000000,
+          "conexiones-nuevas-min-p95": 5,
+          "destinos": ["cloud.fabricante.example", "stream.fabricante.example"],
+          "asn-esperados": [64500, 64501],
+          "versiones-tls": ["tls12"]
+        }
+      },
+      "licencia": "CC-BY-4.0"
+    }
+  },
+  "ietf-access-control-list:acls": {
+    "acl": [
+      {
+        "name": "desde-dispositivo",
+        "type": "ipv4-acl-type",
+        "aces": {
+          "ace": [
+            {
+              "name": "nube-https",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:dst-dnsname": "cloud.fabricante.example" },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "from-device",
+                  "destination-port": { "operator": "eq", "port": 443 }
+                },
+                "ietf-acl-tls:client-profiles": {
+                  "tls-dtls-profile": [{ "name": "observado", "supported-tls-version": ["tls12"] }]
+                }
+              },
+              "actions": { "forwarding": "accept" }
+            },
+            {
+              "name": "video-https",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:dst-dnsname": "stream.fabricante.example" },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "from-device",
+                  "destination-port": { "operator": "eq", "port": 443 }
+                },
+                "ietf-acl-tls:client-profiles": {
+                  "tls-dtls-profile": [{ "name": "observado", "supported-tls-version": ["tls12"] }]
+                }
+              },
+              "actions": { "forwarding": "accept" }
+            },
+            {
+              "name": "ntp",
+              "matches": {
+                "ipv4": { "protocol": 17, "ietf-acldns:dst-dnsname": "ntp.fabricante.example" },
+                "udp": { "destination-port": { "operator": "eq", "port": 123 } }
+              },
+              "actions": { "forwarding": "accept" }
+            }
+          ]
+        }
+      },
+      {
+        "name": "hacia-dispositivo",
+        "type": "ipv4-acl-type",
+        "aces": {
+          "ace": [
+            {
+              "name": "nube-https",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:src-dnsname": "cloud.fabricante.example" },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "from-device",
+                  "source-port": { "operator": "eq", "port": 443 }
+                }
+              },
+              "actions": { "forwarding": "accept" }
+            },
+            {
+              "name": "video-https",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:src-dnsname": "stream.fabricante.example" },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "from-device",
+                  "source-port": { "operator": "eq", "port": 443 }
+                }
+              },
+              "actions": { "forwarding": "accept" }
+            },
+            {
+              "name": "ntp",
+              "matches": {
+                "ipv4": { "protocol": 17, "ietf-acldns:src-dnsname": "ntp.fabricante.example" },
+                "udp": { "source-port": { "operator": "eq", "port": 123 } }
+              },
+              "actions": { "forwarding": "accept" }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

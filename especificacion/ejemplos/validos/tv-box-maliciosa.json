@@ -1,0 +1,141 @@
+{
+  "ietf-mud:mud": {
+    "mud-version": 1,
+    "mud-url": "https://huellaip.github.io/huellas/tv-box/generico/tx-ejemplo/1.0.3.json",
+    "last-update": "2026-10-28T12:00:00-03:00",
+    "cache-validity": 48,
+    "is-supported": false,
+    "systeminfo": "TV box Android genérico TX-Ejemplo (huella de ejemplo, valores ficticios)",
+    "mfg-name": "Genérico",
+    "model-name": "TX-Ejemplo",
+    "firmware-rev": "1.0.3",
+    "documentation": "https://github.com/huellaip/huellas",
+    "extensions": ["huellaip-perfil", "ietf-mud-tls"],
+    "ietf-mud-tls:is-tls-dtls-profile-supported": true,
+    "from-device-policy": {
+      "access-lists": { "access-list": [{ "name": "desde-dispositivo" }] }
+    },
+    "to-device-policy": {
+      "access-lists": { "access-list": [{ "name": "hacia-dispositivo" }] }
+    },
+    "huellaip-perfil:perfil": {
+      "version-formato": "0.1.0",
+      "categoria": "tv-box",
+      "etiqueta": "malicioso",
+      "fuentes-ioc": [
+        "https://www.humansecurity.com/learn/blog/satori-threat-intelligence-disruption-badbox-2-0/"
+      ],
+      "observaciones": "Valores ficticios inspirados en un caso publicado: recién encendido y sin uso, el equipo intenta conexiones masivas a los puertos 22 y 23 de miles de direcciones distintas, con poco ancho de banda. El fabricante no está identificado; el modelo sale de la información del sistema.",
+      "identificacion": { "oui": ["00:00:5E"] },
+      "captura": {
+        "pais": "AR",
+        "fecha-inicio": "2026-10-10",
+        "fecha-fin": "2026-10-11",
+        "aportante": "Laboratorio HuellaIP",
+        "confianza": "baja"
+      },
+      "estados": {
+        "encendido": {
+          "muestra": { "sesiones": 1, "minutos": 15 },
+          "sesiones-concurrentes": { "p50": 40, "p95": 900, "max": 1500 },
+          "bytes-subida-hora-p95": 675000000,
+          "bytes-bajada-hora-p95": 20000000,
+          "conexiones-nuevas-min-p95": 366000,
+          "destinos": ["update.tvbox.example", "panel.c2.example", "*.c2.example"],
+          "asn-esperados": [64502, 64503],
+          "versiones-tls": ["tls10", "tls12"]
+        },
+        "reposo": {
+          "muestra": { "sesiones": 1, "minutos": 1440 },
+          "sesiones-concurrentes": { "p50": 35, "p95": 800, "max": 1500 },
+          "bytes-subida-hora-p95": 600000000,
+          "bytes-bajada-hora-p95": 15000000,
+          "conexiones-nuevas-min-p95": 350000,
+          "keepalive-segundos": 30,
+          "destinos": ["panel.c2.example", "*.c2.example"],
+          "asn-esperados": [64503],
+          "versiones-tls": ["tls10"]
+        }
+      },
+      "estados-omitidos": [
+        {
+          "estado": "activo",
+          "motivo": "En cuarentena el equipo no se usa: no se instalan ni se abren apps."
+        },
+        {
+          "estado": "interaccion",
+          "motivo": "En cuarentena el equipo no se usa: no se instalan ni se abren apps."
+        }
+      ],
+      "licencia": "CC-BY-4.0"
+    }
+  },
+  "ietf-access-control-list:acls": {
+    "acl": [
+      {
+        "name": "desde-dispositivo",
+        "type": "ipv4-acl-type",
+        "aces": {
+          "ace": [
+            {
+              "name": "actualizaciones-https",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:dst-dnsname": "update.tvbox.example" },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "from-device",
+                  "destination-port": { "operator": "eq", "port": 443 }
+                },
+                "ietf-acl-tls:client-profiles": {
+                  "tls-dtls-profile": [{ "name": "observado", "supported-tls-version": ["tls12"] }]
+                }
+              },
+              "actions": { "forwarding": "accept" }
+            },
+            {
+              "name": "ioc-panel-c2",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:dst-dnsname": "panel.c2.example" }
+              },
+              "actions": { "forwarding": "drop" }
+            },
+            {
+              "name": "ioc-ssh-saliente",
+              "matches": {
+                "ipv4": { "protocol": 6 },
+                "tcp": { "destination-port": { "operator": "eq", "port": 22 } }
+              },
+              "actions": { "forwarding": "drop" }
+            },
+            {
+              "name": "ioc-telnet-saliente",
+              "matches": {
+                "ipv4": { "protocol": 6 },
+                "tcp": { "destination-port": { "operator": "eq", "port": 23 } }
+              },
+              "actions": { "forwarding": "drop" }
+            }
+          ]
+        }
+      },
+      {
+        "name": "hacia-dispositivo",
+        "type": "ipv4-acl-type",
+        "aces": {
+          "ace": [
+            {
+              "name": "actualizaciones-https",
+              "matches": {
+                "ipv4": { "protocol": 6, "ietf-acldns:src-dnsname": "update.tvbox.example" },
+                "tcp": {
+                  "ietf-mud:direction-initiated": "from-device",
+                  "source-port": { "operator": "eq", "port": 443 }
+                }
+              },
+              "actions": { "forwarding": "accept" }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -155,6 +155,7 @@ HuellaIP es un proyecto abierto e independiente: ningún ISP, fabricante ni empr
 |---|---|---|
 | Código, especificación, esquema, documentación y configuración del laboratorio | Este repositorio | [Apache-2.0](LICENSE) |
 | Huellas publicadas | [`huellaip/huellas`](https://github.com/huellaip/huellas) | CC-BY-4.0 |
+| Código de conducta, adaptado del Contributor Covenant 3.0 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | CC BY-SA 4.0 |
 
 Los aportes se hacen bajo el [Developer Certificate of Origin](https://developercertificate.org/): quien aporta conserva sus derechos y entrega su trabajo bajo la licencia del repositorio.
 

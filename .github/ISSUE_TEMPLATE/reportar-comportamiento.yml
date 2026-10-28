@@ -1,6 +1,7 @@
 name: Reportar un comportamiento
 description: Un dispositivo hace algo que su categoría no hace nunca.
 title: "[Comportamiento] <fabricante> <modelo>: <qué hace>"
+labels: ["comportamiento"]
 body:
   - type: markdown
     attributes:

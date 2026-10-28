@@ -110,7 +110,7 @@ git push --force-with-lease
 - Documentación: castellano, en cualquiera de sus variantes.
 - Issues, PRs y Discussions: castellano o inglés.
 - Código, identificadores, comentarios y mensajes de commit: inglés.
-- Claves del formato de huella: castellano y sin tildes, como en la especificación (`sesiones_concurrentes`, `interaccion`).
+- Claves del formato de huella: castellano, sin tildes y con guiones, como en la especificación (`sesiones-concurrentes`, `interaccion`).
 
 ### Python
 

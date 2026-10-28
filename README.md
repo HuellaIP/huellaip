@@ -48,7 +48,7 @@ Todo pasa en el router o en un colector al lado: no hay que instalar nada en los
 
 ## La huella
 
-Cada huella es un archivo MUD válido con una extensión propia, `huellaip-perfil`. Cualquier herramienta que entienda MUD puede leer la parte de destinos permitidos; los exportadores de HuellaIP usan además la parte cuantitativa.
+Cada huella es un archivo MUD válido con una extensión propia, `huellaip-perfil`, que va dentro del contenedor MUD como define el RFC 8520. Cualquier herramienta que entienda MUD puede leer la parte de destinos permitidos; los exportadores de HuellaIP usan además la parte cuantitativa.
 
 Las métricas se miden por **estado de uso**:
 
@@ -66,7 +66,7 @@ En cada estado, la huella registra:
 - conexiones nuevas por minuto (p95);
 - periodicidad de las comunicaciones de mantenimiento (keepalives);
 - destinos esperados: dominios y sistemas autónomos (ASN);
-- versión de TLS esperada, alineada con [RFC 9761](https://www.rfc-editor.org/info/rfc9761).
+- versiones de TLS observadas. Además, cada destino lleva su perfil TLS en las reglas MUD, como define el [RFC 9761](https://www.rfc-editor.org/info/rfc9761).
 
 Cada huella se versiona por firmware, porque una actualización alcanza para cambiar el comportamiento. Además declara un nivel de confianza (`baja`, `media`, `alta`) y una etiqueta (`benigno`, `sospechoso`, `malicioso`).
 
@@ -74,18 +74,19 @@ Un fragmento, con valores ficticios:
 
 ```json
 "reposo": {
-  "sesiones_concurrentes": { "p50": 3, "p95": 6, "max": 9 },
-  "bytes_subida_hora_p95": 2500000,
-  "bytes_bajada_hora_p95": 800000,
-  "conexiones_nuevas_min_p95": 2,
-  "keepalive_segundos": 60,
-  "destinos": ["cloud.fabricante-ejemplo.com"],
-  "asn_esperados": [64500],
-  "tls_version": "1.2"
+  "muestra": { "sesiones": 1, "minutos": 4320 },
+  "sesiones-concurrentes": { "p50": 3, "p95": 6, "max": 9 },
+  "bytes-subida-hora-p95": 2500000,
+  "bytes-bajada-hora-p95": 800000,
+  "conexiones-nuevas-min-p95": 2,
+  "keepalive-segundos": 60,
+  "destinos": ["cloud.fabricante.example", "*.dispositivos.fabricante.example"],
+  "asn-esperados": [64500],
+  "versiones-tls": ["tls12"]
 }
 ```
 
-La especificación completa va a vivir en `especificacion/formato-huella-v0.md`, junto con su esquema JSON y ejemplos válidos e inválidos.
+La especificación completa está en [`especificacion/formato-huella-v0.md`](especificacion/formato-huella-v0.md), con su esquema JSON y ejemplos válidos e inválidos. Todavía es un borrador: se publica como 0.1.0 al cierre del prototipo.
 
 ## Qué no es HuellaIP
 

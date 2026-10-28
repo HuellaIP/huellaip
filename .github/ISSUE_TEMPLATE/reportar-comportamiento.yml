@@ -1,0 +1,115 @@
+name: Reportar un comportamiento
+description: Un dispositivo hace algo que su categoría no hace nunca.
+title: "[Comportamiento] <fabricante> <modelo>: <qué hace>"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por reportarlo. Antes de seguir:
+
+        - **Si el equipo puede estar atacando a terceros, aislalo primero** (cuarentena o desconexión) y reportá después.
+        - **No adjuntes** muestras, binarios, APKs, capturas ni logs crudos. Si tenés ese material, indicalo abajo y te contactamos por un canal privado.
+        - Si se trata de una vulnerabilidad del propio proyecto o de un dato sensible publicado por error, no uses este formulario: escribí a [huellaip@googlegroups.com](mailto:huellaip@googlegroups.com).
+  - type: input
+    id: fabricante
+    attributes:
+      label: Fabricante
+      description: Como figura en la etiqueta o en el sistema del equipo. Si no tiene marca clara, poné "genérico".
+    validations:
+      required: true
+  - type: input
+    id: modelo
+    attributes:
+      label: Modelo
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware
+      description: La versión que informa el equipo, si la conocés.
+    validations:
+      required: false
+  - type: dropdown
+    id: categoria
+    attributes:
+      label: Categoría
+      options:
+        - televisor
+        - streaming
+        - tv-box
+        - camara
+        - impresora
+        - router
+        - asistente
+        - enchufe
+        - electrodomestico
+        - otra
+    validations:
+      required: true
+  - type: dropdown
+    id: donde
+    attributes:
+      label: Dónde lo observaste
+      options:
+        - Laboratorio de HuellaIP
+        - Laboratorio propio
+        - Red propia (hogar u oficina)
+        - Red de un ISP (datos agregados)
+        - Otro
+    validations:
+      required: true
+  - type: textarea
+    id: que-hace
+    attributes:
+      label: Qué hace
+      description: |
+        Solo metadatos agregados: puertos, protocolos, cantidad de destinos, conexiones nuevas por segundo, volumen, horarios, ASN, consultas DNS o SNI llamativos.
+        No incluyas direcciones MAC completas, números de serie, cuentas ni la IP pública de tu red.
+      placeholder: |
+        Ej.: a los 2 minutos de encenderlo, 6.000 conexiones nuevas por segundo hacia los puertos 22 y 23 de miles de IPs distintas, con 1 a 2 Mbps de tráfico.
+    validations:
+      required: true
+  - type: textarea
+    id: como-lo-viste
+    attributes:
+      label: Cómo lo observaste
+      description: Herramienta y método (IPFIX, Zeek, logs del firewall, conntrack), durante cuánto tiempo y desde cuándo.
+    validations:
+      required: true
+  - type: dropdown
+    id: estado-equipo
+    attributes:
+      label: Estado actual del equipo
+      options:
+        - Aislado en un segmento de cuarentena
+        - Desconectado
+        - Sigue conectado a la red
+    validations:
+      required: true
+  - type: textarea
+    id: referencias
+    attributes:
+      label: Referencias
+      description: Informes, IOC públicos o artículos que describan un comportamiento parecido.
+    validations:
+      required: false
+  - type: dropdown
+    id: material
+    attributes:
+      label: ¿Tenés material adicional (capturas, muestras)?
+      description: No lo adjuntes. Si respondés que sí, te contactamos por un canal privado.
+      options:
+        - "No"
+        - Sí, puedo compartirlo por un canal privado
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmaciones
+    attributes:
+      label: Confirmaciones
+      options:
+        - label: Leí las líneas rojas de CONTRIBUTING.md.
+          required: true
+        - label: No adjunté muestras, binarios, APKs, capturas, logs crudos ni datos personales.
+          required: true

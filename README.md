@@ -178,4 +178,4 @@ HuellaIP no inventa un estándar: retoma lo que otros dejaron a medio camino.
 
 - **Preguntas, ideas y propuestas:** [Discussions](https://github.com/huellaip/huellaip/discussions).
 - **Vulnerabilidades o datos sensibles subidos por error:** canal privado descripto en [SECURITY.md](SECURITY.md). No abras un issue público.
-- **Otras consultas:** [email]
+- **Otras consultas:** [huellaip@googlegroups.com](mailto:huellaip@googlegroups.com)

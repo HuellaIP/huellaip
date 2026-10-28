@@ -218,3 +218,46 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# -----------------------------------------------------------------------------
+# HuellaIP: datos que nunca se suben al repositorio
+# Ver CONTRIBUTING.md, sección "Líneas rojas". Este archivo es una red de
+# seguridad, no un reemplazo de la revisión: revisá cada archivo antes del commit.
+# -----------------------------------------------------------------------------
+
+# Capturas de paquetes
+*.pcap
+*.pcap.gz
+*.pcapng
+*.pcapng.gz
+*.cap
+
+# Flujos y logs crudos (IPFIX/NetFlow, Zeek, syslog). *.log ya está arriba.
+nfcapd.*
+*.log.gz
+zeek-logs/
+capturas/
+flujos/
+
+# Bases y extractos de análisis con datos crudos
+*.duckdb
+*.duckdb.wal
+*.parquet
+
+# Inventario real del laboratorio (MAC, números de serie, cuentas).
+# Se versiona solo laboratorio/inventario.example.yaml.
+laboratorio/inventario.yaml
+
+# Backups binarios de RouterOS: incluyen contraseñas y llaves.
+# Los .rsc sí se versionan, después de revisarlos a mano.
+*.backup
+
+# Credenciales y llaves (.env ya está arriba)
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+.vault_pass*
+vault-password*

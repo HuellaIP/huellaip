@@ -1,0 +1,63 @@
+name: Proponer un cambio de formato
+description: Cambios a la especificación de la huella, su esquema JSON o sus ejemplos.
+title: "[Formato] <resumen del cambio>"
+labels: ["especificacion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        El formato de huella es el contrato entre quienes capturan, quienes revisan y los routers que consumen las huellas. Por eso cada cambio sigue el proceso de [cambios a la especificación](https://github.com/huellaip/huellaip/blob/main/CONTRIBUTING.md#cambios-a-la-especificación): queda abierto al menos 14 días y decide el comité técnico.
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema
+      description: Qué no se puede expresar o qué sale mal con el formato actual. Si podés, con un caso concreto.
+    validations:
+      required: true
+  - type: textarea
+    id: propuesta
+    attributes:
+      label: Propuesta
+      description: El cambio concreto, con los campos, tipos y unidades que se agregan, cambian o se eliminan. Un fragmento de JSON ayuda.
+    validations:
+      required: true
+  - type: textarea
+    id: mud
+    attributes:
+      label: Por qué no alcanza con MUD
+      description: El proyecto prioriza los estándares. ¿Se puede expresar con los campos de MUD (RFC 8520) o de sus extensiones publicadas, como el RFC 9761? Si no, explicá por qué.
+    validations:
+      required: true
+  - type: dropdown
+    id: compatibilidad
+    attributes:
+      label: Compatibilidad
+      description: Un cambio es compatible si las huellas y los exportadores existentes siguen funcionando sin modificarse.
+      options:
+        - Compatible (sube el número de parche)
+        - Incompatible (sube el número menor mientras el formato esté en 0.x)
+        - No estoy seguro
+    validations:
+      required: true
+  - type: textarea
+    id: impacto
+    attributes:
+      label: Impacto
+      description: Qué pasa con las huellas publicadas, los exportadores, el generador y el validador.
+    validations:
+      required: true
+  - type: textarea
+    id: alternativas
+    attributes:
+      label: Alternativas consideradas
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirmaciones
+    attributes:
+      label: Confirmaciones
+      options:
+        - label: El cambio respeta los principios del proyecto, en particular que las huellas tengan solo metadatos.
+          required: true
+        - label: Entiendo que la propuesta queda abierta al menos 14 días y que la decide el comité técnico.
+          required: true

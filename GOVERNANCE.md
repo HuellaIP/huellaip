@@ -70,7 +70,7 @@ Lo integran el impulsor y dos personas que él elige entre quienes respondieron 
 
 | Integrante | Organización principal | Otras afiliaciones declaradas |
 |---|---|---|
-| Uriel Rozenbaum (impulsor) | Metrotel (Gerente de Operaciones) | Cerrando la Brecha (tesorero) · ITBA (profesor adjunto) |
+| Uriel Rozenbaum (impulsor) | Independiente | Cerrando la Brecha (tesorero) · ITBA (profesor adjunto) |
 | [a designar] | [a declarar] | [a declarar] |
 | [a designar] | [a declarar] | [a declarar] |
 

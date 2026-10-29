@@ -1,6 +1,6 @@
 # Gobernanza de HuellaIP
 
-> Versión 0.1 · octubre de 2026 · Rige para toda la organización HuellaIP en GitHub, incluido `huellaip/huellas`.
+> Versión 0.2 · octubre de 2026 · Rige para toda la organización HuellaIP en GitHub, incluido `huellaip/huellas`.
 
 Este documento explica quién decide qué en HuellaIP y cómo. Busca dos cosas: que el proyecto pueda avanzar rápido mientras es chico, y que ninguna organización, tampoco la de quien lo impulsa, pueda apropiárselo cuando crezca.
 
@@ -74,12 +74,17 @@ Lo integran el impulsor y dos personas que él elige entre quienes respondieron 
 | [a designar] | [a declarar] | [a declarar] |
 | [a designar] | [a declarar] | [a declarar] |
 
-**Hasta cuándo.** El comité provisorio se reemplaza por uno elegido cuando HuellaIP llegue a **diez organizaciones** con aportes aceptados.
+**Hasta cuándo.** El comité provisorio se reemplaza por uno elegido apenas se cumpla la primera de estas dos condiciones:
 
-- Cuenta como organización un ISP, una universidad, una empresa, una organización civil o un organismo público con al menos un aporte aceptado hecho en su nombre, confirmado por alguien de esa organización.
-- Las personas que participan a título individual no suman a la cuenta, pero pueden votar y postularse.
-- El comité provisorio publica cada trimestre, en una discusión fijada, qué organizaciones cuentan y cuántas faltan.
-- Dentro de los 30 días de llegar a diez, convoca la primera elección.
+- HuellaIP llega a **diez participantes** con aportes aceptados;
+- llega el **31 de octubre de 2027**, doce meses después del inicio del proyecto.
+
+Cómo se cuentan los participantes:
+
+- Cuenta como participante cada organización con al menos un aporte aceptado hecho en su nombre, confirmado por alguien de esa organización. Puede ser un ISP, una universidad, una empresa, una organización civil o un organismo público.
+- También cuenta como participante cada persona independiente con al menos un aporte aceptado. Quien aporta en nombre de una organización suma para esa organización, no por separado.
+- El comité provisorio publica cada trimestre, en una discusión fijada, quiénes cuentan y cuántos faltan.
+- Dentro de los 30 días de cumplirse cualquiera de las dos condiciones, convoca la primera elección.
 
 ### Comité elegido
 
@@ -90,6 +95,7 @@ Lo integran el impulsor y dos personas que él elige entre quienes respondieron 
 - **Cómo se vota:** con una herramienta de voto secreto que el comité saliente anuncia al convocar. Cada persona marca hasta cinco candidaturas. Se eligen las cinco más votadas, salteando a quien sea de una organización que ya tiene lugar. Los empates se resuelven por sorteo público.
 - **Coordinación:** el comité elige entre sus integrantes a una persona que coordina el trabajo y lo representa durante el año.
 - **Vacantes:** asume la siguiente candidatura más votada que respete la regla de una por organización. Si no hay, el comité designa a alguien por mayoría hasta la próxima elección.
+- **Pocas candidaturas:** si hay menos de cinco, el comité se integra con las que haya, con un mínimo de tres. Si no se llega a tres, el comité provisorio sigue en funciones y convoca una nueva elección dentro de los seis meses.
 
 ## Neutralidad y conflictos de interés
 

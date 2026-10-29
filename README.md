@@ -148,7 +148,7 @@ Para empezar:
 
 ## Gobernanza
 
-HuellaIP es un proyecto abierto e independiente: ningún ISP, fabricante ni empresa es dueño del proyecto. Por ahora lo conduce un comité técnico provisorio de tres personas, que se reemplaza por uno elegido por quienes aportan cuando el proyecto llegue a diez organizaciones participando. El detalle está en [GOVERNANCE.md](GOVERNANCE.md).
+HuellaIP es un proyecto abierto e independiente: ningún ISP, fabricante ni empresa es dueño del proyecto. Por ahora lo conduce un comité técnico provisorio de tres personas, que se reemplaza por uno elegido por quienes aportan cuando el proyecto sume diez participantes (organizaciones o personas independientes), o a más tardar el 31 de octubre de 2027. El detalle está en [GOVERNANCE.md](GOVERNANCE.md).
 
 ## Licencias
 

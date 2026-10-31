@@ -71,7 +71,7 @@ Lo integran el impulsor y dos personas que él elige entre quienes respondieron 
 | Integrante | Organización principal | Otras afiliaciones declaradas |
 |---|---|---|
 | Uriel Rozenbaum (impulsor) | Independiente | Metrotel (empleador, Gerente de Operaciones) · Cerrando la Brecha (tesorero) · ITBA (profesor adjunto) |
-| [a designar] | [a declarar] | [a declarar] |
+| Orlando Rubino Gala | Metrotel | Cerrando la Brecha (colaborador) |
 | [a designar] | [a declarar] | [a declarar] |
 
 **Hasta cuándo.** El comité provisorio se reemplaza por uno elegido apenas se cumpla la primera de estas dos condiciones:

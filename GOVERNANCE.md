@@ -72,7 +72,9 @@ Lo integran el impulsor y dos personas que él elige entre quienes respondieron 
 |---|---|---|
 | Uriel Rozenbaum (impulsor) | Independiente | Metrotel (empleador, Gerente de Operaciones) · Cerrando la Brecha (tesorero) · ITBA (profesor adjunto) |
 | Orlando Rubino Gala | Metrotel | Cerrando la Brecha (colaborador) |
-| [a designar] | [a declarar] | [a declarar] |
+| Gabriel Benselum | Globant | Vínculo familiar con Uriel Rozenbaum (primo) |
+
+El comité provisorio quedó integrado el 4 de noviembre de 2026.
 
 **Hasta cuándo.** El comité provisorio se reemplaza por uno elegido apenas se cumpla la primera de estas dos condiciones:
 
@@ -117,6 +119,7 @@ Cómo se cuentan los participantes:
 - Las decisiones se discuten en público y su resultado queda registrado en el hilo, con fecha.
 - Las reuniones del comité tienen minuta pública en Discussions dentro de los 7 días.
 - Solo se tratan en privado los reportes de vulnerabilidades, los reportes de conducta, los datos personales y el acceso a muestras maliciosas.
+- **Canales del comité.** Todos sus integrantes reciben los reportes privados en [huellaip@googlegroups.com](mailto:huellaip@googlegroups.com). Además, el comité se coordina por un grupo privado de WhatsApp. Esos canales sirven para coordinar y para atender lo privado: las decisiones se toman y se registran en GitHub, como establece [Cómo se decide](#cómo-se-decide).
 
 ## Inactividad y salida
 

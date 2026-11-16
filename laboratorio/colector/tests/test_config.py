@@ -10,6 +10,8 @@ def test_defaults():
     assert cfg.min_free_bytes == 5 * 1024**3
     assert cfg.flush_seconds == 5.0
     assert cfg.goflow2_extra_args == ()
+    assert cfg.max_drop_ratio == 0.01
+    assert cfg.metrics_addr == "127.0.0.1:8080"
 
 
 def test_overrides():
@@ -20,11 +22,13 @@ def test_overrides():
             "MIN_FREE_GB": "2.5",
             "FLUSH_SECONDS": "1",
             "GOFLOW2_EXTRA_ARGS": "-loglevel debug",
+            "MAX_DROP_PERCENT": "5",
         }
     )
     assert (cfg.listen_port, cfg.retention_days) == (4739, 30)
     assert cfg.min_free_bytes == int(2.5 * 1024**3)
     assert cfg.goflow2_extra_args == ("-loglevel", "debug")
+    assert cfg.max_drop_ratio == 0.05
 
 
 @pytest.mark.parametrize(
@@ -35,6 +39,8 @@ def test_overrides():
         ("RETENTION_DAYS", "0"),
         ("MIN_FREE_GB", "-1"),
         ("FLUSH_SECONDS", "abc"),
+        ("MAX_DROP_PERCENT", "-1"),
+        ("MAX_DROP_PERCENT", "101"),
     ],
 )
 def test_invalid_values_raise(key, value):

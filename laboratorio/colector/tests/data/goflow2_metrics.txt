@@ -1,0 +1,7 @@
+# HELP goflow2_flow_traffic_packets_total Packets received by the application.
+# TYPE goflow2_flow_traffic_packets_total counter
+goflow2_flow_decoder_error_total{name="netflow",router="127.0.0.1"} 1
+goflow2_flow_process_nf_errors_total{error="template_not_found",router="127.0.0.1"} 1
+goflow2_flow_process_nf_total{router="127.0.0.1",version="10"} 1
+goflow2_flow_traffic_packets_total{local_ip="0.0.0.0",local_port="20570",remote_ip="127.0.0.1",type="netflow"} 2
+goflow2_flow_process_nf_delay_seconds{router="127.0.0.1",version="10",quantile="0.5"} 0.1

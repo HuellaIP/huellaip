@@ -24,6 +24,10 @@ class Config:
     heartbeat_path: Path = Path("/tmp/colector-heartbeat.json")
     goflow2_path: Path = Path("/usr/local/bin/goflow2")
     mapping_path: Path = Path("/etc/colector/mapping.yaml")
+    # Above this share of dropped packets in a check interval the container is unhealthy.
+    max_drop_ratio: float = 0.01
+    # GoFlow2's HTTP server (metrics and templates), reachable only inside the container.
+    metrics_addr: str = "127.0.0.1:8080"
 
 
 def _number(env: Mapping[str, str], key: str, kind, minimum, maximum=None):
@@ -55,6 +59,9 @@ def load_config(env: Mapping[str, str]) -> Config:
     flush = _number(env, "FLUSH_SECONDS", float, 0.1)
     if flush is not None:
         values["flush_seconds"] = flush
+    drop = _number(env, "MAX_DROP_PERCENT", float, 0, 100)
+    if drop is not None:
+        values["max_drop_ratio"] = drop / 100
     extra = env.get("GOFLOW2_EXTRA_ARGS")
     if extra:
         values["goflow2_extra_args"] = tuple(shlex.split(extra))

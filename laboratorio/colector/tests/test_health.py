@@ -30,3 +30,17 @@ def test_beat_writes_status_and_leaves_no_temp_file(tmp_path):
     beat(hb, now=1000.0, child_alive=True, low_space=False, dropped_lines=3)
     assert json.loads(hb.read_text())["dropped_lines"] == 3
     assert [p.name for p in tmp_path.iterdir()] == ["hb.json"]
+
+
+def test_loss_alarm_is_unhealthy(tmp_path):
+    hb = tmp_path / "hb.json"
+    beat(hb, now=1000.0, child_alive=True, low_space=False, dropped_lines=0, loss_alarm=True)
+    assert check(hb, now=1010.0) == 1
+
+
+def test_beat_records_the_drop_ratio(tmp_path):
+    hb = tmp_path / "hb.json"
+    beat(hb, now=1000.0, child_alive=True, low_space=False, dropped_lines=0, drop_ratio=0.25)
+    status = json.loads(hb.read_text())
+    assert status["drop_ratio"] == 0.25 and status["loss_alarm"] is False
+    assert check(hb, now=1010.0) == 0

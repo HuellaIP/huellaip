@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 
 from colector.config import Config
 from colector.health import beat
+from colector.metrics import LossTracker, fetch_counters
 from colector.retention import prune
 from colector.writer import HourlyWriter
 
@@ -54,6 +55,8 @@ def build_goflow2_command(cfg: Config) -> list[str]:
         "json",
         "-mapping",
         str(cfg.mapping_path),
+        "-addr",
+        cfg.metrics_addr,
         *cfg.goflow2_extra_args,
     ]
 
@@ -91,9 +94,13 @@ def run(
     prune_fn=prune,
     beat_fn=beat,
     prune_every: float = 60.0,
+    metrics_fn=None,
 ) -> int:
     """Supervises GoFlow2 until stop is set (returns 0) or it keeps crashing (returns 1)."""
+    if metrics_fn is None:
+        metrics_fn = lambda: fetch_counters(cfg.metrics_addr)
     cfg.data_dir.mkdir(parents=True, exist_ok=True)
+    metrics_unreachable_logged = False
     backoff = Backoff()
     command = build_goflow2_command(cfg)
     invalid = 0
@@ -108,6 +115,9 @@ def run(
         last_prune = float("-inf")
         low_space = False
         storage_failed = False  # a write failed since the last check
+        loss = LossTracker()
+        warming_up = True  # the first interval includes data sent before the templates
+        loss_alarm, drop_ratio = False, 0.0
         alive = True
 
         while alive and not stop.is_set():
@@ -151,8 +161,43 @@ def run(
                     log.error("free space below %d bytes: pausing writes", cfg.min_free_bytes)
                 writer.paused = low_space  # after a write error, try again
                 unhealthy_storage = low_space or storage_failed
+
+                counters = metrics_fn()
+                if counters is None:
+                    if not metrics_unreachable_logged:
+                        log.warning("cannot read goflow2 metrics at %s", cfg.metrics_addr)
+                        metrics_unreachable_logged = True
+                    loss_alarm, drop_ratio = False, 0.0
+                else:
+                    window = loss.update(counters)
+                    if window is not None:
+                        drop_ratio = window.ratio
+                        loss_alarm = not warming_up and drop_ratio > cfg.max_drop_ratio
+                        if window.dropped:
+                            level = logging.INFO if warming_up else logging.WARNING
+                            why = (
+                                "expected until the exporter sends its templates"
+                                if warming_up
+                                else "data sets whose template the exporter never sent"
+                            )
+                            log.log(
+                                level,
+                                "goflow2 dropped %d of %d packets (%.1f%%) since the last check: %s",
+                                window.dropped,
+                                window.packets,
+                                100 * drop_ratio,
+                                why,
+                            )
+                        warming_up = False
+
                 beat_fn(
-                    cfg.heartbeat_path, time.time(), True, unhealthy_storage, writer.dropped_lines
+                    cfg.heartbeat_path,
+                    time.time(),
+                    True,
+                    unhealthy_storage,
+                    writer.dropped_lines,
+                    loss_alarm=loss_alarm,
+                    drop_ratio=drop_ratio,
                 )
                 storage_failed = False
                 last_prune = now

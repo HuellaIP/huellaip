@@ -89,11 +89,13 @@ class HourlyWriter:
 
     def close(self) -> None:
         """Flushes and closes the current file without compressing it."""
-        if self._file is not None:
-            self._file.flush()
-            self._file.close()
-        self._file = None
-        self._path = None
+        handle, self._file, self._path = self._file, None, None
+        if handle is not None:
+            # close() releases the file even when the final flush fails (e.g. disk full).
+            try:
+                handle.flush()
+            finally:
+                handle.close()
 
     def _open_current(self) -> None:
         path = hour_path(self.root, self._clock())

@@ -68,6 +68,13 @@ def _pump(stream, lines: queue.Queue) -> None:
     lines.put(None)  # end of output: the child is gone or closed stdout
 
 
+def _close_quietly(writer: HourlyWriter) -> None:
+    try:
+        writer.close()
+    except OSError:
+        pass  # the file is already released by close(); the buffered lines are lost
+
+
 def _is_json_object(line: bytes) -> bool:
     try:
         return isinstance(json.loads(line), dict)
@@ -100,6 +107,7 @@ def run(
         threading.Thread(target=_pump, args=(child.stdout, lines), daemon=True).start()
         last_prune = float("-inf")
         low_space = False
+        storage_failed = False  # a write failed since the last check
         alive = True
 
         while alive and not stop.is_set():
@@ -109,12 +117,21 @@ def run(
                 line = b""
             if line is None:
                 alive = False
-            elif line:
-                if _is_json_object(line):
+            elif line and not _is_json_object(line):
+                invalid += 1
+                line = b""
+            try:
+                if line:
                     writer.write(line)
-                else:
-                    invalid += 1
-            writer.tick()
+                writer.tick()
+            except OSError as err:
+                # Disk full or another storage error: never crash-loop the container.
+                # Writes pause until the next check, and the heartbeat reports unhealthy.
+                if not storage_failed:
+                    log.error("cannot write flows (%s): pausing until the next check", err)
+                storage_failed = True
+                writer.paused = True
+                _close_quietly(writer)
 
             now = time.monotonic()
             if invalid and now - last_invalid_log >= INVALID_LOG_EVERY:
@@ -132,8 +149,12 @@ def run(
                 low_space = result.low_space
                 if low_space and not writer.paused:
                     log.error("free space below %d bytes: pausing writes", cfg.min_free_bytes)
-                writer.paused = low_space
-                beat_fn(cfg.heartbeat_path, time.time(), True, low_space, writer.dropped_lines)
+                writer.paused = low_space  # after a write error, try again
+                unhealthy_storage = low_space or storage_failed
+                beat_fn(
+                    cfg.heartbeat_path, time.time(), True, unhealthy_storage, writer.dropped_lines
+                )
+                storage_failed = False
                 last_prune = now
 
         if stop.is_set():

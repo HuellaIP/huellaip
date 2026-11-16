@@ -118,3 +118,28 @@ def test_run_writes_heartbeat(tmp_path):
     t.join(15)
     assert results == [0]
     assert '"child_alive": true' in cfg.heartbeat_path.read_text()
+
+
+class FullDiskWriter(HourlyWriter):
+    """A writer whose disk is full: every write fails like ENOSPC."""
+
+    def write(self, line):
+        raise OSError(28, "No space left on device")
+
+
+def test_write_errors_pause_and_report_unhealthy_instead_of_crashing(tmp_path):
+    cfg = cfg_with_fake(tmp_path, "ok")
+    writer = FullDiskWriter(cfg.data_dir, lambda: datetime.now(UTC), flush_seconds=0)
+    beats = []
+    stop, t, results = run_in_thread(
+        cfg,
+        writer,
+        sleep=lambda _: None,
+        prune_fn=lambda *a, **k: PruneResult([], False),
+        beat_fn=lambda path, now, alive, low, dropped: beats.append(low),
+        prune_every=0,
+    )
+    assert wait_until(lambda: True in beats)
+    stop.set()
+    t.join(15)
+    assert results == [0]

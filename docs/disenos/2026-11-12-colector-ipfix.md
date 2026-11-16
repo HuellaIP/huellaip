@@ -208,6 +208,14 @@ Van en el plan v0.2:
 - Si GoFlow2 expone las plantillas recibidas por HTTP, usarlo como diagnóstico dentro del contenedor (`docker compose exec`). Sirve para ver qué campos manda RouterOS, incluidos los de NAT.
 - La estructura del código del supervisor y el formato de sus logs.
 
+### 8.1 Cómo se resolvió en la implementación (16/11)
+
+- **Binario.** Se descarga del release de GoFlow2, fijado por SHA-256 para cada arquitectura.
+- **Mapeo de NAT.** Los campos 225 a 228 salen en el JSON. Lo prueban los tests con el binario real.
+- **MAC.** RouterOS 6.49 manda los cuatro elementos (56, 80, 81 y 57). Como GoFlow2 los junta en `src_mac` y `dst_mac` y gana el de salida, el colector los guarda además por separado: `in_src_mac`, `in_dst_mac`, `out_src_mac` y `out_dst_mac`.
+- **Diagnóstico.** `python -m colector.templates` lee las plantillas y las métricas del servidor HTTP de GoFlow2.
+- **Pérdida de paquetes.** Con RouterOS 6.49.3, el colector perdía en silencio un tercio de los paquetes por plantillas que el router nunca anunciaba. El supervisor ahora la informa y el contenedor queda `unhealthy` si supera `MAX_DROP_PERCENT`. Las versiones probadas están en la [tabla de compatibilidad](../../laboratorio/colector/README.md#compatibilidad-con-routers).
+
 ## 9. Decisiones propuestas por Claude (aprobadas el 13/11)
 
 1. Aplicar la regla de solo Docker a todo lo que corre en la Pi, no solo al colector.

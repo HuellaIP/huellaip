@@ -107,6 +107,8 @@ El prototipo arranca a fines de octubre de 2026 y dura unas 12 semanas. Las fies
 | **3. Detección** | 9 a 11 | Exportador a RouterOS en modo solo alerta, probado contra anomalías sintéticas |
 | **4. Publicación** | 12 | Versión 0.1.0 de la especificación y de las huellas, y una guía para replicar la maqueta |
 
+El detalle de cada fase está en el [plan del prototipo](docs/plan-prototipo.md).
+
 El prototipo se limita a dispositivos cableados e IPv4. Después vienen WiFi, IPv6, el exportador a OpenWrt (nftables), un honeypot MikroTik con su plan de contención, pilotos con ISPs y exportadores para FortiGate y CPEs.
 
 ## Estructura del repositorio
@@ -120,8 +122,8 @@ huellaip/
 ├── SECURITY.md                 cómo reportar un problema de seguridad
 ├── GOVERNANCE.md               quién decide y cómo
 ├── especificacion/             formato de huella, esquema JSON y ejemplos
-├── docs/                       metodología de captura, privacidad y contención
-├── laboratorio/                configuración de RouterOS y playbook de Ansible
+├── docs/                       plan del prototipo, diseños, metodología de captura, privacidad y contención
+├── laboratorio/                configuración de RouterOS y contenedores de la Pi
 ├── herramientas/huellaip_lab/  orquestador, generador y validador
 ├── exportadores/routeros/      de la huella a reglas de RouterOS
 └── .github/                    plantillas de issues y PR, integración continua

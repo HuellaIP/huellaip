@@ -35,10 +35,8 @@ El colector depende mucho de cómo cada router arma las plantillas de IPFIX. GoF
 | Router | Versión | Resultado | Fecha | Qué se vio |
 |---|---|---|---|---|
 | MikroTik hEX RB750Gr3 | RouterOS 6.49.3 (stable) | ❌ **No funciona** | 2026-11-16 | Manda conjuntos de datos con la plantilla 260 (eventos de NAT) y nunca la anuncia, aunque `nat-events=no`. GoFlow2 descartó el 34 % de los paquetes; en la ventana de un diagnóstico aparte, el 41 %. |
-| MikroTik hEX RB750Gr3 | RouterOS 6.49.19 (long-term) ¹ | ✅ **Funciona** | 2026-11-16 | Anuncia las plantillas 258 (IPv4, 37 campos, con NAT 225 a 228 y las cuatro MAC) y 259 (IPv6, 34 campos, con las cuatro MAC y sin NAT), en el dominio de observación 0. Cero `template_not_found` en 300 s, sobre 624 paquetes. |
+| MikroTik hEX RB750Gr3 | RouterOS 6.49.23 (stable) | ✅ **Funciona** | 2026-11-16 | Anuncia las plantillas 258 (IPv4, 37 campos, con NAT 225 a 228 y las cuatro MAC) y 259 (IPv6, 34 campos, con las cuatro MAC y sin NAT), en el dominio de observación 0. Cero `template_not_found` en 300 s, sobre 624 paquetes. |
 | MikroTik hEX RB750Gr3 | RouterOS v7 | ⏳ Sin probar | — | Es la versión de la maqueta. Se prueba en la fase 1 del plan. |
-
-¹ Versión que ofrecía el canal long-term al actualizar. Falta confirmarla con `/system resource print`.
 
 Configuración probada en los dos casos: `version=ipfix`, `active-flow-timeout=1m`, `inactive-flow-timeout=15s`, `v9-template-refresh=20`, `v9-template-timeout=30m` y `nat-events=no` (el valor por defecto).
 

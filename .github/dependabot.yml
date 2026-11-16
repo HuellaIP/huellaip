@@ -1,0 +1,13 @@
+# Weekly updates for the pinned GitHub Actions and the collector's base image.
+# GoFlow2 comes from its release binaries (ADD --checksum in the Dockerfile) and is
+# updated by hand, reviewing mapping.yaml as a format change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /laboratorio/colector
+    schedule:
+      interval: weekly

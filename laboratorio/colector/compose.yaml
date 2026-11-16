@@ -1,0 +1,35 @@
+# HuellaIP IPFIX collector.
+#   docker compose up -d           uses the published image
+#   docker compose up -d --build   builds it here (before the first release)
+# Only Docker is needed on the host. Settings go in .env (see .env.example).
+name: huellaip-colector
+
+services:
+  colector:
+    image: ghcr.io/huellaip/colector:0.1.0
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${LISTEN_PORT:-2055}:${LISTEN_PORT:-2055}/udp"
+    volumes:
+      - huellaip-flujos:/datos
+    env_file:
+      - path: .env
+        required: false
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  # Raw flows: full MAC addresses and private IPs. They never leave the host.
+  huellaip-flujos:
+    name: huellaip-flujos

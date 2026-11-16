@@ -223,6 +223,7 @@ add chain=forward action=drop log=yes log-prefix="FWD-DROP" comment="transito: t
 ```
 
 **Notas del borrador:**
+- **Versión mínima de RouterOS.** Con RouterOS 6.48 a 6.49.3, el hEX manda datos de eventos de NAT con una plantilla que nunca anuncia, aunque `nat-events=no`, y el colector pierde un tercio de los paquetes. Hace falta la 6.49.4 o posterior en la rama 6; en la rama 7 se valida en la fase 1. Las versiones probadas están en la [tabla de compatibilidad del colector](../laboratorio/colector/README.md#compatibilidad-con-routers).
 - **Sin configuración IPv6.** En v0 los dispositivos solo tienen IPv4 hacia internet.
 - **Exportación al repo.** El `.rsc` que se versione en `laboratorio/routeros/` sale de `/export` sin secretos y con MAC ficticias.
 - **Usuario con escritura.** Para cargar reglas de prueba en la fase 3 se crea un segundo usuario, que se deshabilita al terminar cada prueba. Hay que verificar que el grupo de cada usuario tenga la política necesaria para usar la API REST.

@@ -1,0 +1,194 @@
+# HuellaIP IPFIX collector: tests on every change, image published on colector-v* tags.
+name: colector
+
+on:
+  pull_request:
+    paths:
+      - "laboratorio/colector/**"
+      - ".github/workflows/colector.yml"
+  push:
+    branches: [main]
+    paths:
+      - "laboratorio/colector/**"
+      - ".github/workflows/colector.yml"
+    tags: ["colector-v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: colector-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/huellaip/colector
+  GOFLOW2_VERSION: "2.2.7"
+  GOFLOW2_SHA256_AMD64: 63d3bb6c4e458f56ae3268eac74979da1fee0cea5342362295e7d587784af14b
+  RUFF_VERSION: "0.16.9"
+  PYTEST_VERSION: "9.1.1"
+
+defaults:
+  run:
+    working-directory: laboratorio/colector
+
+jobs:
+  test:
+    name: lint and tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Install ruff and pytest
+        run: python -m pip install "ruff==${RUFF_VERSION}" "pytest==${PYTEST_VERSION}"
+      - name: Download GoFlow2 for the process test
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/goflow2" \
+            "https://github.com/netsampler/goflow2/releases/download/v${GOFLOW2_VERSION}/goflow2-${GOFLOW2_VERSION}-linux-amd64"
+          echo "${GOFLOW2_SHA256_AMD64}  $RUNNER_TEMP/goflow2" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/goflow2"
+      - name: Ruff
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Tests (unit and GoFlow2 process)
+        run: |
+          set -o pipefail
+          GOFLOW2_BIN="$RUNNER_TEMP/goflow2" python -m pytest tests -v \
+            --ignore=tests/integration/test_container.py 2>&1 | tee "$RUNNER_TEMP/pytest.log"
+      - name: Report failure as an annotation
+        if: failure()
+        run: |
+          body=$(tail -n 60 "$RUNNER_TEMP/pytest.log" 2>/dev/null | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=colector tests failed::${body}"
+
+  build:
+    name: image on ${{ matrix.arch }}
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.14"
+      - name: Install pytest
+        run: python -m pip install "pytest==${PYTEST_VERSION}"
+      - name: Container test (build, run hardened, send IPFIX)
+        run: |
+          set -o pipefail
+          python -m pytest tests/integration/test_container.py -v -s 2>&1 | tee "$RUNNER_TEMP/pytest.log"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Dry run of the release build (no push)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: laboratorio/colector
+          platforms: linux/${{ matrix.arch }}
+          push: false
+          provenance: mode=max
+          sbom: true
+      - name: Report failure as an annotation
+        if: failure()
+        run: |
+          body=$(tail -n 60 "$RUNNER_TEMP/pytest.log" 2>/dev/null | sed -e 's/%/%25/g' | sed -e ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=colector image on ${{ matrix.arch }} failed::${body}"
+
+  publish:
+    name: publish ${{ matrix.arch }}
+    if: startsWith(github.ref, 'refs/tags/colector-v')
+    needs: build
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check that the tag matches the image version
+        run: |
+          version="${GITHUB_REF_NAME#colector-v}"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::bad tag ${GITHUB_REF_NAME}"; exit 1; }
+          grep -q "org.opencontainers.image.version=\"${version}\"" Dockerfile \
+            || { echo "::error::Dockerfile version label is not ${version}"; exit 1; }
+          grep -q "image: ${IMAGE}:${version}$" compose.yaml \
+            || { echo "::error::compose.yaml does not pin ${version}"; exit 1; }
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: laboratorio/colector
+          platforms: linux/${{ matrix.arch }}
+          provenance: mode=max
+          sbom: true
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+      - name: Save the digest
+        working-directory: ${{ runner.temp }}
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          mkdir -p digests
+          touch "digests/${DIGEST#sha256:}"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: digest-${{ matrix.arch }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  manifest:
+    name: multi-arch manifest
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digest-*
+          merge-multiple: true
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create the X.Y.Z and X.Y tags
+        run: |
+          cd "$RUNNER_TEMP/digests"
+          version="${GITHUB_REF_NAME#colector-v}"
+          minor="${version%.*}"
+          # shellcheck disable=SC2046
+          docker buildx imagetools create -t "${IMAGE}:${version}" -t "${IMAGE}:${minor}" \
+            $(printf "${IMAGE}@sha256:%s " *)
+          docker buildx imagetools inspect "${IMAGE}:${version}"

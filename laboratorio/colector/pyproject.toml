@@ -1,0 +1,17 @@
+[project]
+name = "colector"
+version = "0.1.0"
+description = "HuellaIP IPFIX collector: GoFlow2 plus a supervisor that writes hourly JSON files"
+license = "Apache-2.0"
+requires-python = ">=3.13"
+
+[tool.setuptools]
+packages = ["colector"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = ["integration: needs Docker or the GoFlow2 binary"]

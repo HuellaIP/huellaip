@@ -10,8 +10,12 @@ import time
 SRC = ("10.77.10.11", 40000)
 DST = ("192.0.2.10", 443)
 NAT_SRC = ("198.51.100.7", 50000)
-SRC_MAC = "02:00:00:00:00:11"
-DST_MAC = "02:00:00:00:00:01"
+# The four MAC elements, each with a different value, as a router sends them:
+# 56 and 80 on the ingress side, 81 and 57 on the egress side.
+SRC_MAC = "02:00:00:00:00:11"  # 56 sourceMacAddress
+DST_MAC = "02:00:00:00:00:01"  # 80 destinationMacAddress
+OUT_SRC_MAC = "02:00:00:00:00:02"  # 81 postSourceMacAddress
+OUT_DST_MAC = "02:00:00:00:00:12"  # 57 postDestinationMacAddress
 BYTES, PACKETS, PROTO_TCP = 1234, 10, 6
 
 # (information element, length)
@@ -31,6 +35,8 @@ FIELDS = [
     (226, 4),  # postNATDestinationIPv4Address
     (227, 2),  # postNAPTSourceTransportPort
     (228, 2),  # postNAPTDestinationTransportPort
+    (81, 6),  # postSourceMacAddress
+    (57, 6),  # postDestinationMacAddress
 ]
 
 
@@ -58,9 +64,17 @@ def build_message(template_id: int = 256, observation_domain: int = 0) -> bytes:
         + _ip(NAT_SRC[0])
         + _ip(DST[0])
         + struct.pack("!HH", NAT_SRC[1], DST[1])
+        + _mac(OUT_SRC_MAC)
+        + _mac(OUT_DST_MAC)
     )
     data_set = struct.pack("!HH", template_id, 4 + len(record)) + record
 
     body = template_set + data_set
     header = struct.pack("!HHIII", 10, 16 + len(body), int(time.time()), 1, observation_domain)
     return header + body
+
+
+def build_unknown_template_message(template_id: int = 260) -> bytes:
+    """A data set whose template was never announced, as RouterOS 6.49.3 sent for NAT events."""
+    data_set = struct.pack("!HH", template_id, 8) + b"\x00" * 4
+    return struct.pack("!HHIII", 10, 16 + len(data_set), int(time.time()), 2, 0) + data_set

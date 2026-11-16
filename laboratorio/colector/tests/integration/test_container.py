@@ -13,7 +13,16 @@ from pathlib import Path
 
 import pytest
 
-from .ipfix_synth import DST, DST_MAC, NAT_SRC, SRC, SRC_MAC, build_message
+from .ipfix_synth import (
+    DST,
+    DST_MAC,
+    NAT_SRC,
+    OUT_DST_MAC,
+    OUT_SRC_MAC,
+    SRC,
+    SRC_MAC,
+    build_message,
+)
 
 CONTEXT = Path(__file__).resolve().parents[2]
 IMAGE = "huellaip/colector:dev"
@@ -82,7 +91,8 @@ def test_container_writes_flow_and_is_healthy(container):
     assert (flow["src_addr"], flow["src_port"]) == SRC
     assert (flow["dst_addr"], flow["dst_port"]) == DST
     assert (flow["bytes"], flow["packets"]) == (1234, 10)
-    assert (flow["src_mac"], flow["dst_mac"]) == (SRC_MAC, DST_MAC)
+    assert (flow["in_src_mac"], flow["in_dst_mac"]) == (SRC_MAC, DST_MAC)
+    assert (flow["out_src_mac"], flow["out_dst_mac"]) == (OUT_SRC_MAC, OUT_DST_MAC)
     assert (flow["post_nat_src_addr"], flow["post_napt_src_port"]) == NAT_SRC
     # Behind Docker's port publishing the exporter shows as the bridge gateway; the real
     # router address is checked in staging.

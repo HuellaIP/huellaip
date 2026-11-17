@@ -6,7 +6,7 @@ name: huellaip-colector
 
 services:
   colector:
-    image: ghcr.io/huellaip/colector:0.1.1
+    image: ghcr.io/huellaip/colector:0.1.2
     build: .
     restart: unless-stopped
     ports:

@@ -35,7 +35,7 @@ El colector depende mucho de cómo cada router arma las plantillas de IPFIX. GoF
 | Router | Versión | Resultado | Fecha | Qué se vio |
 |---|---|---|---|---|
 | MikroTik hEX RB750Gr3 | RouterOS 6.49.3 (stable) | ❌ **No funciona** | 2026-11-16 | Manda conjuntos de datos con la plantilla 260 (eventos de NAT) y nunca la anuncia, aunque `nat-events=no`. GoFlow2 descartó el 34 % de los paquetes; en la ventana de un diagnóstico aparte, el 41 %. |
-| MikroTik hEX RB750Gr3 | RouterOS 6.49.23 (stable) | ✅ **Funciona** | 2026-11-16 | Anuncia las plantillas 258 (IPv4, 37 campos, con NAT 225 a 228 y las cuatro MAC) y 259 (IPv6, 34 campos, con las cuatro MAC y sin NAT), en el dominio de observación 0. Cero `template_not_found` en 300 s, sobre 624 paquetes. |
+| MikroTik hEX RB750Gr3 | RouterOS 6.49.23 (stable) | ✅ **Funciona** | 2026-11-16 | Anuncia las plantillas 258 (IPv4, 37 campos, con NAT 225 a 228 y las cuatro MAC) y 259 (IPv6, 34 campos, con las cuatro MAC y sin NAT), en el dominio de observación 0. Cero `template_not_found` en 300 s, sobre 624 paquetes. El elemento 57 repite el valor del 80: en la bajada no viene la MAC del dispositivo (ver [Las MAC](#las-mac)). |
 | MikroTik hEX RB750Gr3 | RouterOS v7 | ⏳ Sin probar | — | Es la versión de la maqueta. Se prueba en la fase 1 del plan. |
 
 Configuración probada en los dos casos: `version=ipfix`, `active-flow-timeout=1m`, `inactive-flow-timeout=15s`, `v9-template-refresh=20`, `v9-template-timeout=30m` y `nat-events=no` (el valor por defecto).
@@ -49,7 +49,7 @@ Fuentes: [changelog de RouterOS 6.49.x](https://mikrotik.wiki/wiki/MikroTik_Rout
 1. Levantá el colector y apuntá el router al puerto 2055.
 2. Esperá al menos dos minutos y corré `docker compose exec colector python -m colector.templates`. La última línea dice cuántos paquetes recibió GoFlow2 y cuántos descartó por falta de plantilla desde que arrancó.
 3. Dejalo andar una hora. El contenedor tiene que seguir `healthy` y en los logs no tiene que aparecer `goflow2 dropped … data sets whose template the exporter never sent`.
-4. Revisá en el diagnóstico de plantillas que vengan los campos de NAT y de MAC (ver más abajo).
+4. Revisá en el diagnóstico de plantillas que vengan los campos de NAT y de MAC, y con flujos reales, qué trae cada MAC en la subida y en la bajada (ver [Las MAC](#las-mac)).
 5. Abrí un PR que sume una fila a esta tabla con el modelo, la versión, la fecha, la configuración y lo que viste, funcione o no. Una versión que no funciona también es un dato útil.
 
 ### Pérdida esperable al arrancar
@@ -109,7 +109,7 @@ En los flujos, `sampler_address` tiene que traer la IP del router. Si aparece la
 - **Ubicación:** volumen con nombre `huellaip-flujos`, montado en `/datos`.
 - **Organización:** `/datos/flujos/AAAA/MM/DD/AAAA-MM-DDTHH.jsonl`, en UTC. Al cambiar la hora, el archivo se cierra y se comprime a `.jsonl.gz`. Si un archivo comprimido ya existe (por ejemplo, después de una corrección de hora), el nuevo lleva un sufijo numérico (`…THH.1.jsonl.gz`) y nunca pisa al anterior.
 - **Reinicios:** al arrancar se comprimen los archivos de horas pasadas que hayan quedado abiertos. El de la hora en curso se sigue escribiendo a continuación.
-- **Formato:** cada línea es el JSON de GoFlow2 sin cambios, más los campos de NAT y de MAC que agrega [`mapping.yaml`](mapping.yaml). Una línea recortada de un flujo de subida, con valores ficticios:
+- **Formato:** cada línea es el JSON de GoFlow2 sin cambios, más los campos de NAT y de MAC que agrega [`mapping.yaml`](mapping.yaml). Una línea recortada de un flujo de subida exportado por el hEX, con valores ficticios:
 
 ```json
 {
@@ -127,8 +127,8 @@ En los flujos, `sampler_address` tiene que traer la IP del router. Si aparece la
   "dst_port": 443,
   "in_if": 0,
   "out_if": 0,
-  "src_mac": "02:00:00:00:00:02",
-  "dst_mac": "02:00:00:00:00:12",
+  "src_mac": "02:00:00:00:00:11",
+  "dst_mac": "02:00:00:00:00:01",
   "post_nat_src_addr": "198.51.100.7",
   "post_nat_dst_addr": "192.0.2.10",
   "post_napt_src_port": 50000,
@@ -136,24 +136,9 @@ En los flujos, `sampler_address` tiene que traer la IP del router. Si aparece la
   "in_src_mac": "02:00:00:00:00:11",
   "in_dst_mac": "02:00:00:00:00:01",
   "out_src_mac": "02:00:00:00:00:02",
-  "out_dst_mac": "02:00:00:00:00:12"
+  "out_dst_mac": "02:00:00:00:00:01"
 }
 ```
-
-### Las MAC
-
-El hEX manda las cuatro MAC de cada flujo: las de la trama que entra al router y las de la que sale. El colector las guarda por separado:
-
-| Campo | Elemento IPFIX | Qué es, en un flujo de subida |
-|---|---|---|
-| `in_src_mac` | 56 `sourceMacAddress` | La MAC del dispositivo |
-| `in_dst_mac` | 80 `destinationMacAddress` | La MAC del router del lado de la LAN |
-| `out_src_mac` | 81 `postSourceMacAddress` | La MAC del router del lado de la WAN |
-| `out_dst_mac` | 57 `postDestinationMacAddress` | La MAC del equipo siguiente hacia internet |
-
-En un flujo de bajada se invierte: la MAC del dispositivo queda en `out_dst_mac`, porque es el destino de la trama que sale hacia la LAN. **Para atribuir un flujo a un dispositivo, usá `in_src_mac` en la subida y `out_dst_mac` en la bajada.** La tabla sigue las definiciones de IANA; falta confirmarla con flujos reales del hEX.
-
-GoFlow2 además junta cada par en `src_mac` y `dst_mac`, pero **esos dos campos no sirven para atribuir**. Cuando el router manda los dos elementos de un par, gana el que viene después en la plantilla, que en el hEX es el de salida. En el ejemplo, `src_mac` es la MAC de la WAN del router y no la del dispositivo.
 
 - **Lectura con DuckDB:** DuckDB lee los archivos en curso y los comprimidos con un mismo patrón. La imagen de herramientas con DuckDB llega en un PR posterior.
 
@@ -163,6 +148,27 @@ FROM read_json_auto('/datos/flujos/**/*.jsonl*')
 GROUP BY src_addr
 ORDER BY bytes DESC;
 ```
+
+### Las MAC
+
+El colector guarda por separado los cuatro elementos de MAC que manda el router. Qué trae cada uno depende del router. Con RouterOS 6.49.23 en el hEX, medido en staging sobre 1,17 millones de flujos:
+
+| Campo | Elemento IPFIX | Subida (de la LAN a internet) | Bajada (de internet a la LAN) |
+|---|---|---|---|
+| `in_src_mac` | 56 `sourceMacAddress` | **La MAC del dispositivo** | La MAC del equipo siguiente hacia internet |
+| `in_dst_mac` | 80 `destinationMacAddress` | La MAC del router del lado de la LAN | La MAC del router del lado de la WAN |
+| `out_src_mac` | 81 `postSourceMacAddress` | La MAC del router del lado de la WAN | La MAC del router del lado de la LAN |
+| `out_dst_mac` | 57 `postDestinationMacAddress` | Repite `in_dst_mac` | Repite `in_dst_mac` |
+
+Según IANA, el elemento 57 es la MAC de destino de la trama que sale del router; en la bajada, la del dispositivo. RouterOS 6.49.23 manda ahí el mismo valor que en el 80, así que **en la bajada no viene la MAC del dispositivo.** Falta ver qué hace RouterOS v7.
+
+**Cómo atribuir cada flujo a un dispositivo:**
+- **Subida:** `in_src_mac`, o la IP de origen (`src_addr`).
+- **Bajada en IPv4:** `post_nat_dst_addr`, que trae la IP privada del dispositivo. En staging, el 99,99 % de los flujos de bajada la tenían; `dst_addr` trae la IP de la WAN del router.
+- **Bajada en IPv6:** `dst_addr`, porque no hay NAT.
+- **Si hace falta la MAC en la bajada:** se toma de los flujos de subida de la misma IP. Sirve mientras el dispositivo no cambie de IP: en staging, cada IP de la LAN tuvo una sola MAC en 18 horas, y en la maqueta cada equipo tiene la IP reservada.
+
+**`src_mac` y `dst_mac`.** GoFlow2 junta cada par en un solo campo: `src_mac` sale del 56 o del 81, y `dst_mac` del 80 o del 57. Cuando vienen los dos, gana el que aparece después en la plantilla. El hEX los manda en el orden 57, 80, 81, 56, así que `src_mac` es `in_src_mac` y `dst_mac` es `in_dst_mac`. Con otro router el orden puede cambiar: para atribuir, usá los campos `in_` y `out_`.
 
 ## Privacidad
 

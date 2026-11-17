@@ -10,8 +10,9 @@ import time
 SRC = ("10.77.10.11", 40000)
 DST = ("192.0.2.10", 443)
 NAT_SRC = ("198.51.100.7", 50000)
-# The four MAC elements, each with a different value, as a router sends them:
-# 56 and 80 on the ingress side, 81 and 57 on the egress side.
+# The four MAC elements, each with a different value: 56 and 80 on the ingress side,
+# 81 and 57 on the egress side. Real routers may fill them differently (RouterOS 6.49
+# repeats 80 in 57); distinct values prove each element lands in its own field.
 SRC_MAC = "02:00:00:00:00:11"  # 56 sourceMacAddress
 DST_MAC = "02:00:00:00:00:01"  # 80 destinationMacAddress
 OUT_SRC_MAC = "02:00:00:00:00:02"  # 81 postSourceMacAddress
@@ -29,14 +30,15 @@ FIELDS = [
     (2, 8),  # packetDeltaCount
     (152, 8),  # flowStartMilliseconds
     (153, 8),  # flowEndMilliseconds
-    (56, 6),  # sourceMacAddress
+    # The MAC elements in the order RouterOS 6.49.23 sends them (template 258)
+    (57, 6),  # postDestinationMacAddress
     (80, 6),  # destinationMacAddress
+    (81, 6),  # postSourceMacAddress
+    (56, 6),  # sourceMacAddress
     (225, 4),  # postNATSourceIPv4Address
     (226, 4),  # postNATDestinationIPv4Address
     (227, 2),  # postNAPTSourceTransportPort
     (228, 2),  # postNAPTDestinationTransportPort
-    (81, 6),  # postSourceMacAddress
-    (57, 6),  # postDestinationMacAddress
 ]
 
 
@@ -59,13 +61,13 @@ def build_message(template_id: int = 256, observation_domain: int = 0) -> bytes:
         + _ip(DST[0])
         + struct.pack("!HHB", SRC[1], DST[1], PROTO_TCP)
         + struct.pack("!QQQQ", BYTES, PACKETS, now_ms - 1000, now_ms)
-        + _mac(SRC_MAC)
+        + _mac(OUT_DST_MAC)
         + _mac(DST_MAC)
+        + _mac(OUT_SRC_MAC)
+        + _mac(SRC_MAC)
         + _ip(NAT_SRC[0])
         + _ip(DST[0])
         + struct.pack("!HH", NAT_SRC[1], DST[1])
-        + _mac(OUT_SRC_MAC)
-        + _mac(OUT_DST_MAC)
     )
     data_set = struct.pack("!HH", template_id, 4 + len(record)) + record
 

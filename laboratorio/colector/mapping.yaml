@@ -5,8 +5,9 @@
 # - the four MAC elements kept apart: in_src_mac (56), in_dst_mac (80), out_src_mac (81)
 #   and out_dst_mac (57). GoFlow2 also merges them into src_mac (56 or 81) and dst_mac
 #   (80 or 57): when a router sends both, the one that comes later in the template wins
-#   (producer/proto/producer_nf.go), so on upload flows src_mac can be the router's own
-#   WAN MAC instead of the device's. Use the in_/out_ fields for attribution.
+#   (producer/proto/producer_nf.go), so what src_mac and dst_mac hold depends on the
+#   router. Use the in_/out_ fields for attribution; the README says what each one holds
+#   with the routers tested.
 #
 # When formatter.fields is set, GoFlow2 prints only the listed fields. The list therefore
 # carries every field GoFlow2 v2.2.7 prints by default, in its order, followed by the NAT

@@ -212,7 +212,7 @@ Van en el plan v0.2:
 
 - **Binario.** Se descarga del release de GoFlow2, fijado por SHA-256 para cada arquitectura.
 - **Mapeo de NAT.** Los campos 225 a 228 salen en el JSON. Lo prueban los tests con el binario real.
-- **MAC.** RouterOS 6.49 manda los cuatro elementos (56, 80, 81 y 57). Como GoFlow2 los junta en `src_mac` y `dst_mac` y gana el de salida, el colector los guarda además por separado: `in_src_mac`, `in_dst_mac`, `out_src_mac` y `out_dst_mac`.
+- **MAC.** RouterOS 6.49 manda los cuatro elementos (56, 80, 81 y 57). GoFlow2 los junta en `src_mac` y `dst_mac`, y cuál gana depende del orden de la plantilla, así que el colector los guarda además por separado: `in_src_mac`, `in_dst_mac`, `out_src_mac` y `out_dst_mac`. En staging se vio que RouterOS 6.49.23 repite en el 57 el valor del 80, así que la bajada se atribuye por `post_nat_dst_addr` y no por MAC. El detalle está en la sección "Las MAC" del README del colector.
 - **Diagnóstico.** `python -m colector.templates` lee las plantillas y las métricas del servidor HTTP de GoFlow2.
 - **Pérdida de paquetes.** Con RouterOS 6.49.3, el colector perdía en silencio un tercio de los paquetes por plantillas que el router nunca anunciaba. El supervisor ahora la informa y el contenedor queda `unhealthy` si supera `MAX_DROP_PERCENT`. Las versiones probadas están en la [tabla de compatibilidad](../../laboratorio/colector/README.md#compatibilidad-con-routers).
 

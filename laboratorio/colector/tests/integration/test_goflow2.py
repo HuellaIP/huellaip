@@ -89,8 +89,10 @@ def test_supervisor_writes_goflow2_json_with_nat_fields(tmp_path):
         # The four MAC elements are kept apart...
         assert (flow["in_src_mac"], flow["in_dst_mac"]) == (SRC_MAC, DST_MAC)
         assert (flow["out_src_mac"], flow["out_dst_mac"]) == (OUT_SRC_MAC, OUT_DST_MAC)
-        # ...because GoFlow2 merges them into src_mac / dst_mac and the egress side wins.
-        assert (flow["src_mac"], flow["dst_mac"]) == (OUT_SRC_MAC, OUT_DST_MAC)
+        # ...because GoFlow2 merges each pair into src_mac / dst_mac and the element that
+        # comes later in the template wins. In the hEX order (57, 80, 81, 56) that is the
+        # ingress side.
+        assert (flow["src_mac"], flow["dst_mac"]) == (SRC_MAC, DST_MAC)
         assert (flow["post_nat_src_addr"], flow["post_napt_src_port"]) == NAT_SRC
         assert (flow["post_nat_dst_addr"], flow["post_napt_dst_port"]) == DST
         assert flow["sampler_address"] == "127.0.0.1"

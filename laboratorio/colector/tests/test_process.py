@@ -56,7 +56,7 @@ def test_command_uses_config():
     assert build_goflow2_command(cfg) == [
         "/usr/local/bin/goflow2",
         "-listen",
-        "netflow://:4739",
+        "netflow://:4739?workers=1",
         "-format",
         "json",
         "-mapping",

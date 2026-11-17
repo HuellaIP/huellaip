@@ -564,7 +564,7 @@ Quién integra el comité técnico provisorio y cómo se decide está en [GOVERN
 - [ ] Definir la ubicación y coordinar el uplink dedicado, avisando al equipo de abuse del proveedor
 - [ ] Resetear el hEX y aplicar la configuración por bloques
 - [ ] Configurar el switch: troncal hacia ether3, accesos en las VLAN 10 y 66, gestión fuera de la 66
-- [ ] Construir y publicar el colector IPFIX (`colector-v0.1.0`)
+- [x] Construir y publicar el colector IPFIX (`colector-v0.1.0`)
 - [ ] Instalar Docker en la Pi y levantar los contenedores del laboratorio: colector, Zeek, syslog y herramientas
 - [ ] Confirmar que llega el IPFIX y que Zeek ve las dos VLAN por el espejo
 - [ ] Pasar las pruebas de medición, hora y contención, y documentarlas

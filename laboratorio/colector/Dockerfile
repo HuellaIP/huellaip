@@ -24,7 +24,7 @@ FROM python:3.14-slim@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6
 LABEL org.opencontainers.image.source="https://github.com/huellaip/huellaip" \
       org.opencontainers.image.description="HuellaIP IPFIX collector: GoFlow2 plus a supervisor that writes hourly JSON files" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      org.opencontainers.image.version="0.1.0"
+      org.opencontainers.image.version="0.1.1"
 
 COPY --from=goflow2 /goflow2 /usr/local/bin/goflow2
 RUN /usr/local/bin/goflow2 -v

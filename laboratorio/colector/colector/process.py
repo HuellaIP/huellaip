@@ -47,10 +47,12 @@ class Backoff:
 
 
 def build_goflow2_command(cfg: Config) -> list[str]:
+    # One decoding worker: GoFlow2 v2.2.7 writes each JSON object and its newline in two
+    # separate writes, so with more workers two flows can share a line and both are lost.
     return [
         str(cfg.goflow2_path),
         "-listen",
-        f"netflow://:{cfg.listen_port}",
+        f"netflow://:{cfg.listen_port}?workers=1",
         "-format",
         "json",
         "-mapping",

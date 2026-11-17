@@ -89,6 +89,8 @@ El contenedor queda `unhealthy` si pasa cualquiera de estas cosas:
 - no hay espacio libre suficiente, o falló la escritura en el volumen;
 - GoFlow2 descartó más de `MAX_DROP_PERCENT` de los paquetes en el último intervalo.
 
+El aviso `dropped N non-JSON lines from goflow2` no deja el contenedor `unhealthy`, pero son flujos que no se guardaron. Desde la 0.1.1 no debería aparecer; si aparece, ver "Un solo worker de GoFlow2" en [Mantenimiento](#mantenimiento).
+
 En el diagnóstico de plantillas, revisá tres líneas:
 - `NAT elements (225-228)`: si el router manda los campos de NAT, que hacen falta para atribuir los flujos de bajada.
 - `MAC elements (56, 80, 81, 57)`: qué campos de MAC manda el router. Ver [Las MAC](#las-mac).
@@ -180,6 +182,9 @@ El volumen tiene MAC completas, IP privadas y destinos de los equipos de la red.
 **Actualizar GoFlow2.** GoFlow2 sale de los binarios del release, fijados por SHA-256. Para cambiar de versión:
 1. Cambiar `GOFLOW2_VERSION` y los dos checksums en el `Dockerfile`, y el checksum de amd64 en `.github/workflows/colector.yml`.
 2. Revisar la lista de campos de `mapping.yaml` contra lo que la versión nueva imprime por defecto.
+3. Revisar si sigue haciendo falta un solo worker (ver abajo).
+
+**Un solo worker de GoFlow2.** El supervisor arranca GoFlow2 con `-listen netflow://:2055?workers=1`. GoFlow2 v2.2.7 escribe cada JSON y su salto de línea en dos escrituras separadas, y con dos workers (su valor por defecto) a veces quedan dos flujos pegados en una línea y una línea vacía. El supervisor las descarta y lo avisa con `dropped N non-JSON lines from goflow2`: en el staging se perdían unos 55 flujos por hora, el 0,08 %. Un worker alcanza para un laboratorio, que exporta decenas de flujos por segundo. La prueba `test_goflow2_writes_one_flow_per_line_under_concurrent_load` manda ráfagas en paralelo y falla si vuelve a pasar; sirve para decidir si una versión nueva de GoFlow2 admite más workers.
 
 Un cambio de versión de GoFlow2 se revisa como un cambio de formato. Dependabot actualiza la imagen base y las acciones del CI, pero no GoFlow2.
 

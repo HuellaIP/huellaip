@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import socket
+import subprocess
 import threading
 import time
 from datetime import UTC, datetime
@@ -15,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from colector.config import Config
-from colector.process import run
+from colector.process import build_goflow2_command, run
 from colector.writer import HourlyWriter
 
 from .ipfix_synth import (
@@ -128,3 +129,42 @@ def test_supervisor_reports_packets_goflow2_drops(tmp_path, caplog):
     assert results == [0]
     assert alarm_seen, "the heartbeat never raised the loss alarm"
     assert any("goflow2 dropped" in r.message for r in caplog.records)
+
+
+def test_goflow2_writes_one_flow_per_line_under_concurrent_load(tmp_path):
+    """GoFlow2 v2.2.7 writes each JSON object and its newline in two separate writes.
+    With more than one decoding worker, two flows can end up on the same line, followed
+    by an empty one, and the supervisor has to drop both. The command we build must avoid it.
+    """
+    port = free_port()
+    cfg = make_config(tmp_path, port)
+    out_path = tmp_path / "stdout.jsonl"
+    with out_path.open("wb") as out:
+        child = subprocess.Popen(build_goflow2_command(cfg), stdout=out)
+        try:
+            time.sleep(1)  # let GoFlow2 bind the port
+            message = build_message()
+
+            def blast():
+                with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                    for _ in range(20000):
+                        s.sendto(message, ("127.0.0.1", port))
+
+            senders = [threading.Thread(target=blast) for _ in range(4)]
+            for sender in senders:
+                sender.start()
+            for sender in senders:
+                sender.join()
+            time.sleep(3)  # let GoFlow2 drain its queue
+        finally:
+            child.terminate()
+            child.wait(10)
+    valid, invalid = 0, []
+    for line in out_path.read_bytes().splitlines():
+        try:
+            json.loads(line)
+            valid += 1
+        except ValueError:
+            invalid.append(line[:80])
+    assert valid > 1000, "too few flows to exercise concurrent writes"
+    assert invalid == [], f"{len(invalid)} lines are not one JSON object each"
